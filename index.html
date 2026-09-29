@@ -1,170 +1,432 @@
 <!DOCTYPE html>
 <html lang="en">
-	<head>
-		<title>THREE.JS webgl - simple text from json</title>
-		<meta charset="utf-8">
-		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
-		<meta property="og:title" content="THREE.JS webgl - simple text from json">
-		<meta property="og:type" content="website">
-		<meta property="og:url" content="https://threejs.org/examples/webgl_geometry_text_shapes.html">
-		<meta property="og:image" content="https://threejs.org/examples/screenshots/webgl_geometry_text_shapes.jpg">
-		<link type="text/css" rel="stylesheet" href="main.css">
-		<style>
-			body {
-				background-color: #f0f0f0;
-				color: #444;
-			}
-			a {
-				color: #08f;
-			}
-		</style>
-	</head>
-	<body>
-		<div id="info">
-			<a href="https://threejs.org" target="_blank" rel="noopener">THREE.JS</a> webgl - simple text from json fonts
-		</div>
 
-		<script type="importmap">
-			{
-				"imports": {
-					"three": "../build/three.module.js",
-					"three/addons/": "./jsm/"
-				}
-			}
-		</script>
+<head>
+    <meta charset="UTF-8">
 
-		<script type="module">
+    <meta name="viewport"
+        content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
 
-			import * as THREE from 'three';
+    <title>Fardit Ahamed | 3D Portfolio</title>
 
-			import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-			import { FontLoader } from 'three/addons/loaders/FontLoader.js';
+    <style>
+        html,
+        body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background: #f0f0f0;
+            font-family: Arial, sans-serif;
+        }
 
-			let camera, scene, renderer;
+        canvas {
+            display: block;
+        }
+    </style>
+</head>
 
-			init();
+<body>
 
-			function init( ) {
+    <script type="importmap">
+    {
+        "imports": {
+            "three": "https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js",
+            "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.180.0/examples/jsm/"
+        }
+    }
+    </script>
 
-				camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 1, 10000 );
-				camera.position.set( 0, - 400, 600 );
+    <script type="module">
 
-				scene = new THREE.Scene();
-				scene.background = new THREE.Color( 0xf0f0f0 );
+        import * as THREE from 'three';
 
-				const loader = new FontLoader();
-				loader.load( 'fonts/helvetiker_regular.typeface.json', function ( font ) {
+        import { OrbitControls } from
+            'three/addons/controls/OrbitControls.js';
 
-					const color = 0x006699;
+        import { FontLoader } from
+            'three/addons/loaders/FontLoader.js';
 
-					const matDark = new THREE.LineBasicMaterial( {
-						color: color,
-						side: THREE.DoubleSide
-					} );
 
-					const matLite = new THREE.MeshBasicMaterial( {
-						color: color,
-						transparent: true,
-						opacity: 0.4,
-						side: THREE.DoubleSide
-					} );
+        let camera;
+        let scene;
+        let renderer;
 
-					const message = '   THREE.JS\nSimple text.';
 
-					const shapes = font.generateShapes( message, 100 );
+        // ==========================================
+        // INITIALIZE
+        // ==========================================
 
-					const geometry = new THREE.ShapeGeometry( shapes );
+        init();
 
-					geometry.computeBoundingBox();
 
-					const xMid = - 0.5 * ( geometry.boundingBox.max.x - geometry.boundingBox.min.x );
+        function init() {
 
-					geometry.translate( xMid, 0, 0 );
+            // ==========================================
+            // CAMERA
+            // ==========================================
 
-					// make shape ( N.B. edge view not visible )
+            camera = new THREE.PerspectiveCamera(
+                45,
+                window.innerWidth / window.innerHeight,
+                1,
+                10000
+            );
 
-					const text = new THREE.Mesh( geometry, matLite );
-					text.position.z = - 150;
-					scene.add( text );
+            camera.position.set(
+                0,
+                -250,
+                700
+            );
 
-					// make line shape ( N.B. edge view remains visible )
 
-					const holeShapes = [];
+            // ==========================================
+            // SCENE
+            // ==========================================
 
-					for ( let i = 0; i < shapes.length; i ++ ) {
+            scene = new THREE.Scene();
 
-						const shape = shapes[ i ];
+            scene.background =
+                new THREE.Color(0xf0f0f0);
 
-						if ( shape.holes && shape.holes.length > 0 ) {
 
-							for ( let j = 0; j < shape.holes.length; j ++ ) {
+            // ==========================================
+            // LOAD FONT
+            // ==========================================
 
-								const hole = shape.holes[ j ];
-								holeShapes.push( hole );
+            const loader = new FontLoader();
 
-							}
+            loader.load(
 
-						}
+                'https://cdn.jsdelivr.net/npm/three@0.180.0/examples/fonts/helvetiker_regular.typeface.json',
 
-					}
+                function (font) {
 
-					shapes.push( ...holeShapes );
+                    createText(font);
 
-					const lineText = new THREE.Object3D();
+                },
 
-					for ( let i = 0; i < shapes.length; i ++ ) {
+                undefined,
 
-						const shape = shapes[ i ];
+                function (error) {
 
-						const points = shape.getPoints();
-						const geometry = new THREE.BufferGeometry().setFromPoints( points );
+                    console.error(
+                        'Font loading error:',
+                        error
+                    );
 
-						geometry.translate( xMid, 0, 0 );
+                }
+            );
 
-						const lineMesh = new THREE.Line( geometry, matDark );
-						lineText.add( lineMesh );
 
-					}
+            // ==========================================
+            // RENDERER
+            // ==========================================
 
-					scene.add( lineText );
+            renderer = new THREE.WebGLRenderer({
+                antialias: true
+            });
 
-					render();
+            renderer.setPixelRatio(
+                window.devicePixelRatio
+            );
 
-				} ); //end load function
+            renderer.setSize(
+                window.innerWidth,
+                window.innerHeight
+            );
 
-				renderer = new THREE.WebGLRenderer( { antialias: true } );
-				renderer.setPixelRatio( window.devicePixelRatio );
-				renderer.setSize( window.innerWidth, window.innerHeight );
-				document.body.appendChild( renderer.domElement );
+            document.body.appendChild(
+                renderer.domElement
+            );
 
-				const controls = new OrbitControls( camera, renderer.domElement );
-				controls.target.set( 0, 0, 0 );
-				controls.update();
 
-				controls.addEventListener( 'change', render );
+            // ==========================================
+            // ORBIT CONTROLS
+            // ==========================================
 
-				window.addEventListener( 'resize', onWindowResize );
+            const controls = new OrbitControls(
+                camera,
+                renderer.domElement
+            );
 
-			} // end init
+            controls.target.set(
+                0,
+                0,
+                0
+            );
 
-			function onWindowResize() {
+            controls.enableDamping = true;
 
-				camera.aspect = window.innerWidth / window.innerHeight;
-				camera.updateProjectionMatrix();
+            controls.dampingFactor = 0.05;
 
-				renderer.setSize( window.innerWidth, window.innerHeight );
+            controls.update();
 
-				render();
+            controls.addEventListener(
+                'change',
+                render
+            );
 
-			}
 
-			function render() {
+            // ==========================================
+            // WINDOW RESIZE
+            // ==========================================
 
-				renderer.render( scene, camera );
+            window.addEventListener(
+                'resize',
+                onWindowResize
+            );
 
-			}
 
-		</script>
+            render();
 
-	</body>
+        }
+
+
+        // ==========================================
+        // CREATE TEXT
+        // ==========================================
+
+        function createText(font) {
+
+            const color = 0x006699;
+
+
+            // ==========================================
+            // TEXT MATERIAL
+            // ==========================================
+
+            const matLite =
+                new THREE.MeshBasicMaterial({
+
+                    color: color,
+
+                    transparent: true,
+
+                    opacity: 0.7,
+
+                    side: THREE.DoubleSide
+
+                });
+
+
+            // ==========================================
+            // YOUR NAME
+            // ==========================================
+
+            const message =
+                'Fardit Ahamed';
+
+
+            // ==========================================
+            // GENERATE TEXT SHAPES
+            // ==========================================
+
+            const shapes =
+                font.generateShapes(
+                    message,
+                    100
+                );
+
+
+            // ==========================================
+            // TEXT GEOMETRY
+            // ==========================================
+
+            const geometry =
+                new THREE.ShapeGeometry(
+                    shapes
+                );
+
+            geometry.computeBoundingBox();
+
+
+            // ==========================================
+            // CENTER TEXT
+            // ==========================================
+
+            const xMid =
+                -0.5 *
+                (
+                    geometry.boundingBox.max.x -
+                    geometry.boundingBox.min.x
+                );
+
+
+            geometry.translate(
+                xMid,
+                0,
+                0
+            );
+
+
+            // ==========================================
+            // TEXT MESH
+            // ==========================================
+
+            const text =
+                new THREE.Mesh(
+                    geometry,
+                    matLite
+                );
+
+            text.position.z = -150;
+
+            scene.add(text);
+
+
+            // ==========================================
+            // OUTLINE MATERIAL
+            // ==========================================
+
+            const matDark =
+                new THREE.LineBasicMaterial({
+
+                    color: color,
+
+                    side: THREE.DoubleSide
+
+                });
+
+
+            // ==========================================
+            // FIND HOLES
+            // ==========================================
+
+            const holeShapes = [];
+
+
+            for (
+                let i = 0;
+                i < shapes.length;
+                i++
+            ) {
+
+                const shape =
+                    shapes[i];
+
+
+                if (
+                    shape.holes &&
+                    shape.holes.length > 0
+                ) {
+
+                    for (
+                        let j = 0;
+                        j < shape.holes.length;
+                        j++
+                    ) {
+
+                        holeShapes.push(
+                            shape.holes[j]
+                        );
+
+                    }
+
+                }
+
+            }
+
+
+            shapes.push(
+                ...holeShapes
+            );
+
+
+            // ==========================================
+            // CREATE OUTLINE
+            // ==========================================
+
+            const lineText =
+                new THREE.Object3D();
+
+
+            for (
+                let i = 0;
+                i < shapes.length;
+                i++
+            ) {
+
+                const shape =
+                    shapes[i];
+
+
+                const points =
+                    shape.getPoints();
+
+
+                const lineGeometry =
+                    new THREE.BufferGeometry()
+                        .setFromPoints(points);
+
+
+                lineGeometry.translate(
+                    xMid,
+                    0,
+                    0
+                );
+
+
+                const lineMesh =
+                    new THREE.Line(
+                        lineGeometry,
+                        matDark
+                    );
+
+
+                lineText.add(
+                    lineMesh
+                );
+
+            }
+
+
+            scene.add(lineText);
+
+
+            render();
+
+        }
+
+
+        // ==========================================
+        // WINDOW RESIZE
+        // ==========================================
+
+        function onWindowResize() {
+
+            camera.aspect =
+                window.innerWidth /
+                window.innerHeight;
+
+            camera.updateProjectionMatrix();
+
+            renderer.setSize(
+                window.innerWidth,
+                window.innerHeight
+            );
+
+            render();
+
+        }
+
+
+        // ==========================================
+        // RENDER
+        // ==========================================
+
+        function render() {
+
+            renderer.render(
+                scene,
+                camera
+            );
+
+        }
+
+    </script>
+
+</body>
+
 </html>
